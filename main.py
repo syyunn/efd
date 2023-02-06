@@ -84,6 +84,7 @@ def scrape_one_page(df, driver):
 
 def scrape_insert_one_legislator(first_name, last_name):
     chrome_options = Options()
+    chrome_options.add_argument("--headless") # only in case you wanna run it in headless
     chrome_options.add_experimental_option("detach", True)
     global browser  # this will prevent the browser variable from being garbage collected
     # from lobbyview.db import PostgresqlManager
