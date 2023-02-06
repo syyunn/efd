@@ -1,4 +1,4 @@
-# import psycopg2
+import psycopg2
 import selenium
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
@@ -8,11 +8,12 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 from dateutil import parser
 # from lobbyview.db import PostgresqlManager
+from octopus.db import PostgresqlManager
 
 
 def scrape_one_page(df, driver):
     sql_insert_client_name_and_url = """
-    INSERT INTO financial_disclosures.senate(first_name, last_name, office, report_type, report_type_url, date_received)
+    INSERT INTO senate_annual(first_name, last_name, office, report_type, report_type_url, date_received)
     VALUES(%s, %s, %s, %s, %s, %s)
     """
 
@@ -42,31 +43,31 @@ def scrape_one_page(df, driver):
                 date_received,
             ]
             pass
-            # pm = PostgresqlManager(dotenv_path="/Users/syyun/financial-disclosure/.env")
-            # try:
-            #     pm.execute_sql(
-            #         sql=sql_insert_client_name_and_url,
-            #         parameters=(
-            #             first_name,
-            #             last_name,
-            #             office,
-            #             report_type,
-            #             url_prefix + report_type_url,
-            #             date_received,
-            #         ),
-            #         commit=True,
-            #     )
-            #     print("insert", (
-            #             first_name,
-            #             last_name,
-            #             office,
-            #             report_type,
-            #             url_prefix + report_type_url,
-            #             date_received,
-            #         ))
-            # except psycopg2.errors.UniqueViolation:
-            #     pass
-            # pass
+            pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.env")
+            try:
+                pm.execute_sql(
+                    sql=sql_insert_client_name_and_url,
+                    parameters=(
+                        first_name,
+                        last_name,
+                        office,
+                        report_type,
+                        url_prefix + report_type_url,
+                        date_received,
+                    ),
+                    commit=True,
+                )
+                print("insert", (
+                        first_name,
+                        last_name,
+                        office,
+                        report_type,
+                        url_prefix + report_type_url,
+                        date_received,
+                    ))
+            except psycopg2.errors.UniqueViolation:
+                pass
+            pass
         else:
             pass
     
@@ -127,11 +128,12 @@ def scrape_insert_one_legislator(first_name, last_name):
 if __name__ == "__main__":
     from utils import get_senators
     congress = 118
+    print("Congress", congress)
     list_of_senators_df = get_senators(n_th_congress=congress)
 
     for row in list_of_senators_df.itertuples():
         print(row.first_name, row.last_name)        
-        # scrape_insert_one_legislator(row.first_name,  row.last_name)
-        scrape_insert_one_legislator("Mitch", "McConnell")
+        scrape_insert_one_legislator(row.first_name,  row.last_name)
+        # scrape_insert_one_legislator("Mitch", "McConnell") # for test purpose
         pass
     pass    

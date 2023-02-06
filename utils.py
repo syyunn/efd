@@ -24,11 +24,10 @@ def get_senators(n_th_congress):
             name = td.text
             first_name, last_name = name.split(' ')[0].replace('\n', '').split('[')[0], name.split(' ')[-1].replace('\n', '').split('[')[0]
             df.loc[len(df.index)] = [first_name, last_name]
-        # name = td.data_sort_value
-        pass
+            name = td.data_sort_value
     return df
 
-def parse_annual(url):
+def parse_annual(firstname, lastname, url):
     import selenium
     from selenium import webdriver
     from webdriver_manager.chrome import ChromeDriverManager
