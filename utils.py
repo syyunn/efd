@@ -28,7 +28,6 @@ def get_senators(n_th_congress):
         pass
     return df
 
-
 if __name__ == "__main__":
     df = get_senators(n_th_congress=118)
     pass

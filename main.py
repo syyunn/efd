@@ -98,6 +98,8 @@ def scrape_insert_one_legislator(first_name, last_name):
     # this will automatically let the page turn into serach
     inputElement = driver.find_element(By.ID, "firstName").send_keys(first_name)
     inputElement = driver.find_element(By.ID, "lastName").send_keys(last_name)
+    # click Annual
+    inputElement = driver.find_element(By.ID, "reportTypeLabelAnnual").find_element(By.ID, "reportTypes").click()
 
     driver.find_element(By.CSS_SELECTOR, ".btn.btn-primary").click()
 
@@ -129,7 +131,7 @@ if __name__ == "__main__":
 
     for row in list_of_senators_df.itertuples():
         print(row.first_name, row.last_name)        
-        scrape_insert_one_legislator(row.first_name,  row.last_name)
-        # scrape_insert_one_legislator("Mitch", "McConnell")
+        # scrape_insert_one_legislator(row.first_name,  row.last_name)
+        scrape_insert_one_legislator("Mitch", "McConnell")
         pass
     pass    
