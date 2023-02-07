@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 
 
-def get_senators(n_th_congress):
+def get_senators(n_th_congress, insert=False):
     wiki_url = f"https://en.wikipedia.org/wiki/List_of_United_States_senators_in_the_{n_th_congress}th_Congress"
     df = pd.DataFrame({
             'congress': [],
@@ -30,30 +30,35 @@ def get_senators(n_th_congress):
             party = tds[1].text.replace('\n', '')
             
             # insert into pandas df
-            df.loc[len(df.index)] = [n_th_congress, first_name, last_name, party, 'https://en.wikipedia.org/' + url]   
-            # insert into postgresql
-            from octopus.db import PostgresqlManager
-            import psycopg2
-            pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.env")
-            sql_insert_client_name_and_url = """
-            INSERT INTO senator(congress, first_name, last_name, party, url)
-            VALUES(%s, %s, %s, %s, %s)
-            """
+            df.loc[len(df.index)] = [n_th_congress, first_name, last_name, party, url]   
 
-            try:
-                pm.execute_sql(
-                    sql=sql_insert_client_name_and_url,
-                    parameters=(
-                        n_th_congress,
-                        first_name,
-                        last_name,
-                        party,
-                        url                    ),
-                    commit=True,
-                )
-            except psycopg2.errors.UniqueViolation:
+            if insert == False:
+                continue
+            else:
+                # insert into postgresql
+                from octopus.db import PostgresqlManager
+                import psycopg2
+                pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.env")
+                sql_insert_client_name_and_url = """
+                INSERT INTO senator(congress, first_name, last_name, party, url)
+                VALUES(%s, %s, %s, %s, %s)
+                """
+
+                try:
+                    pm.execute_sql(
+                        sql=sql_insert_client_name_and_url,
+                        parameters=(
+                            n_th_congress,
+                            first_name,
+                            last_name,
+                            party,
+                            url
+                            ),
+                        commit=True,
+                    )
+                except psycopg2.errors.UniqueViolation:
+                    pass
                 pass
-            pass
 
 
     return df
@@ -100,8 +105,8 @@ def parse_annual(firstname, lastname, url):
 
 
 if __name__ == "__main__":
-    for i in range(114, 118): # other than this period, the format of the wikipedia page is different
-        df = get_senators(n_th_congress=i)
-    # df = get_senators(n_th_congress=118)
+    # for i in range(114, 119): # other than this period, the format of the wikipedia page is different
+    #     df = get_senators(n_th_congress=i, insert=True)
+    df = get_senators(n_th_congress=118, insert=True)
     # # df = parse_annual(url="https://efdsearch.senate.gov//search/view/annual/2f72a35a-adad-4555-8341-01eacbd507d3/")
     pass
