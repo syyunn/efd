@@ -11,10 +11,10 @@ from dateutil import parser
 from octopus.db import PostgresqlManager
 
 
-def scrape_one_page(df, driver):
+def scrape_one_page(df, driver, url):
     sql_insert_client_name_and_url = """
-    INSERT INTO senate_annual(first_name, last_name, office, report_type, report_type_url, date_received)
-    VALUES(%s, %s, %s, %s, %s, %s)
+    INSERT INTO senate_annual(url, first_name, last_name, office, report_type, report_type_url, date_received)
+    VALUES(%s, %s, %s, %s, %s, %s, %s)
     """
 
     url_prefix = "https://efdsearch.senate.gov/"
@@ -35,6 +35,7 @@ def scrape_one_page(df, driver):
             report_type_url = tds[3].find("a")["href"]
             date_received = parser.parse(tds[4].text)
             df.loc[len(df.index)] = [
+                url,
                 first_name,
                 last_name,
                 office,
@@ -48,6 +49,7 @@ def scrape_one_page(df, driver):
                 pm.execute_sql(
                     sql=sql_insert_client_name_and_url,
                     parameters=(
+                        url,
                         first_name,
                         last_name,
                         office,
@@ -57,14 +59,15 @@ def scrape_one_page(df, driver):
                     ),
                     commit=True,
                 )
-                print("insert", (
-                        first_name,
-                        last_name,
-                        office,
-                        report_type,
-                        url_prefix + report_type_url,
-                        date_received,
-                    ))
+                # print("insert", (
+                #         url,
+                #         first_name,
+                #         last_name,
+                #         office,
+                #         report_type,
+                #         url_prefix + report_type_url,
+                #         date_received,
+                #     ))
             except psycopg2.errors.UniqueViolation:
                 pass
             pass
@@ -82,25 +85,25 @@ def scrape_one_page(df, driver):
     return next_btn
 
 
-def scrape_insert_one_legislator(first_name, last_name):
+def scrape_insert_one_legislator(first_name, last_name, url):
     chrome_options = Options()
     chrome_options.add_argument("--headless") # only in case you wanna run it in headless
     chrome_options.add_experimental_option("detach", True)
     global browser  # this will prevent the browser variable from being garbage collected
     # from lobbyview.db import PostgresqlManager
 
-    url = "https://efdsearch.senate.gov/search/"
+    edf = "https://efdsearch.senate.gov/search/"
     driver = webdriver.Chrome(
         ChromeDriverManager().install(), chrome_options=chrome_options
     )
-    driver.get(url)
+    driver.get(edf)
 
     # check the input box
     inputElement = driver.find_element(By.ID, "agree_statement").click()
     # this will automatically let the page turn into serach
     inputElement = driver.find_element(By.ID, "firstName").send_keys(first_name)
     inputElement = driver.find_element(By.ID, "lastName").send_keys(last_name)
-    # click Annual
+    # this is to search Annual Report only
     inputElement = driver.find_element(By.ID, "reportTypeLabelAnnual").find_element(By.ID, "reportTypes").click()
 
     driver.find_element(By.CSS_SELECTOR, ".btn.btn-primary").click()
@@ -109,8 +112,10 @@ def scrape_insert_one_legislator(first_name, last_name):
 
     df = pd.DataFrame(
         {
+            "url": [],
             "firstname": [],
             "last_name": [],
+            "url": [],
             "office": [],
             "report_type": [],
             "report_type_url": [],
@@ -120,7 +125,7 @@ def scrape_insert_one_legislator(first_name, last_name):
 
     next_btn = True
     while next_btn:
-        next_btn = scrape_one_page(df, driver)
+        next_btn = scrape_one_page(df, driver, url)
         if next_btn:
             next_btn.click()
     driver.close()
@@ -130,11 +135,11 @@ if __name__ == "__main__":
     from utils import get_senators
     congress = 118
     print("Congress", congress)
-    list_of_senators_df = get_senators(n_th_congress=congress)
-
-    for row in list_of_senators_df.itertuples():
-        print(row.first_name, row.last_name)        
-        scrape_insert_one_legislator(row.first_name,  row.last_name)
-        # scrape_insert_one_legislator("Mitch", "McConnell") # for test purpose
+    df = get_senators(n_th_congress=congress)
+    df = df.loc[16:, :]
+    for row in df.itertuples():
+        print(row.first_name, row.last_name, row.url)        
+        scrape_insert_one_legislator(row.first_name,  row.last_name, row.url)
         pass
-    pass    
+    # scrape_insert_one_legislator("Patty", "Murray", "https://en.wikipedia.org//wiki/Patty_Murray") # for test purpose
+    pass
