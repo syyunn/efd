@@ -1,7 +1,9 @@
 CREATE TABLE [IF NOT EXISTS] senator (
-   first_name text,
-   last_name text,
-   url text
+    congress text,
+    first_name text,
+    last_name text,
+    party text,
+    url text,
 );
 
 
