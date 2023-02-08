@@ -187,16 +187,16 @@ if __name__ == "__main__":
 
     # df = parse_annual(url="https://efdsearch.senate.gov//search/view/annual/2f72a35a-adad-4555-8341-01eacbd507d3/")
 
-    # from octopus.db import PostgresqlManager
-    # pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.env")
-    # df = pm.execute_sql(fetchall=True, sql=
-    #                """select * from senate_annual sa 
-    #                   inner join senator s on sa.url = s.url
-    #                   where report_type ilike '%annual%2021%' and s.congress = 118"""
-    #                 )
-    # for row in df:
-    #     url = row[5] #url of annual report
-    #     print(url)
-    #     parse_annual(url=url)
-    # pass
+    from octopus.db import PostgresqlManager
+    pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.env")
+    df = pm.execute_sql(fetchall=True, sql=
+                   """select * from senate_annual sa 
+                      inner join senator s on sa.url = s.url
+                      where report_type ilike '%annual%2020%' and s.congress = 118"""
+                    )
+    for row in df:
+        url = row[5] #url of annual report
+        print(url)
+        parse_annual(url=url)
+    pass
     pass

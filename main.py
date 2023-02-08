@@ -136,10 +136,11 @@ if __name__ == "__main__":
     congress = 117
     print("Congress", congress)
     df = get_senators(n_th_congress=congress) # this part can be replaced w/ db-fetch
-    df = df.loc[16:, :]
+    # df = df.loc[16:, :] # this is to use in case of errors
     for row in df.itertuples():
         print(row.first_name, row.last_name, row.url)        
         scrape_insert_one_legislator(row.first_name,  row.last_name, row.url)
         pass
+    # below is for test purpose
     # scrape_insert_one_legislator("Patty", "Murray", "https://en.wikipedia.org//wiki/Patty_Murray") # for test purpose
     pass
