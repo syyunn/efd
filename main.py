@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from dateutil import parser
 # from lobbyview.db import PostgresqlManager
 from octopus.db import PostgresqlManager
+from tqdm import tqdm
 
 
 def scrape_one_page(df, driver, url):
@@ -133,11 +134,11 @@ def scrape_insert_one_legislator(first_name, last_name, url):
 
 if __name__ == "__main__":
     from utils import get_senators
-    congress = 117
+    congress = 116
     print("Congress", congress)
     df = get_senators(n_th_congress=congress) # this part can be replaced w/ db-fetch
     # df = df.loc[16:, :] # this is to use in case of errors
-    for row in df.itertuples():
+    for row in tqdm(df.itertuples()):
         print(row.first_name, row.last_name, row.url)        
         scrape_insert_one_legislator(row.first_name,  row.last_name, row.url)
         pass
