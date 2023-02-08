@@ -40,8 +40,8 @@ ADD CONSTRAINT senate_annual__4b_uniq UNIQUE (report_url, owner, ticker, ticker_
 
 CREATE TABLE price(
     ticker text,
-    date text, 
-    vwap text)
+    date date, 
+    vwap float)
     ;
 ALTER TABLE price
 ADD CONSTRAINT price_uniq UNIQUE (ticker, date, vwap);

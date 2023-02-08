@@ -12,9 +12,15 @@ client = RESTClient(api_key=api_key)
 from octopus.db import PostgresqlManager
 pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.env")
 df = pm.execute_sql(fetchall=True, sql=
+                # """
+                # select distinct ticker, trans_date from senate_annual_4b sb
+                #    inner join senate_annual sa on sa.report_type_url  = sb.report_url
+                # """
                 """
-                select distinct ticker, trans_date from senate_annual_4b sb
+                select distinct sb.ticker, trans_date from senate_annual_4b sb
                    inner join senate_annual sa on sa.report_type_url  = sb.report_url
+				   left join price p on (p.ticker = sb.ticker and trans_date =p."date")
+                where vwap is null and sb.ticker is not null
                 """
                 )
 for ticker, date in df: # name and ticker pairs
