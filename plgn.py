@@ -2,8 +2,7 @@ from polygon import RESTClient
 import polygon
 from dotenv import load_dotenv
 import os
-from datetime import datetime
-import octopus
+import pandas as pd
 
 env = load_dotenv('/Users/syyun/Dropbox (MIT)/efd/.env')
 api_key = os.getenv("POLYGON_APIKEY")
@@ -17,6 +16,13 @@ def get_price_change(ticker, date1, date2, amnt=15000):
     return (bars[1].vwap - bars[0].vwap) * units
 
 # print(get_price_change("BND", "2021-06-04", "2021-12-16"))
+
+result = pd.DataFrame({
+        'first_name': [],
+        'last_name': [],
+        'ticker': [],
+        'cash': []
+        })
 
 from octopus.db import PostgresqlManager
 pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.env")
@@ -34,6 +40,7 @@ for row in df: # name and ticker pairs
                 select distinct first_name, last_name, ticker, trans_type, trans_date, amount_min from senate_annual_4b sb 
                 inner join senate_annual sa on sa.report_type_url  = sb.report_url 
                 where first_name = {backslash_char}{row[0]}{backslash_char} and last_name = {backslash_char}{row[1]}{backslash_char} and ticker = {backslash_char}{row[2]}{backslash_char}
+                order by trans_date asc
                 """
                 )
     # check only the cases which starts as purchase and ends as sell
@@ -63,22 +70,31 @@ for row in df: # name and ticker pairs
             current_holdings = sum(purchase_units)
 
             if "Purchase" in ps:
-                units = amount / bars[0].vwap
+                units = amount / bars[0].vwap # this is the minimum amount of units purchased
                 purchase_units.append(units)
                 cash -= amount
-            elif "Sale (Full)" in ps:       
-                purchase_units.append(-current_holdings)
-                cash_out = current_holdings * bars[0].vwap
-                if cash_out < amount:
-                    cash_out = amount
-                cash += cash_out       
+            elif "Sale (Full)" in ps:
+                units = amount / bars[0].vwap # minimum units estimated as being sold.
+                if units > current_holdings: # this means we're missing previous data about purchasement
+                    print("break! insufficient holdings to sell all", row[0], row[1], row[2])
+                    break
+                else:
+                    purchase_units.append(-current_holdings) # sell all of the holdings
+                    cash_out = current_holdings * bars[0].vwap
+                    cash += cash_out      
             elif "Sale (Partial)" in ps:
                 units = amount / bars[0].vwap # minimum amount estimated as being sold.
-                purchase_units.append(-units)
-                cash_out = units * bars[0].vwap
-                cash += cash_out
+                if units > current_holdings: # this means we're missing previous data because one can't sell more than what they have
+                    print("break! insufficient holdings to sell", row[0], row[1], row[2])
+                    break
+                else:
+                    purchase_units.append(-units)
+                    cash_out = units * bars[0].vwap
+                    cash += cash_out
             pass
+        result.loc[len(result.index)] = [row[0], row[1], row[2], cash]  
         print(row[0], row[1], row[2], cash)
 
 
     pass
+pass
