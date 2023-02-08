@@ -3,6 +3,7 @@ import polygon
 from dotenv import load_dotenv
 import os
 import pandas as pd
+from tqdm import tqdm
 
 env = load_dotenv('/Users/syyun/Dropbox (MIT)/efd/.env')
 api_key = os.getenv("POLYGON_APIKEY")
@@ -23,7 +24,7 @@ df = pm.execute_sql(fetchall=True, sql=
                 where vwap is null and sb.ticker is not null
                 """
                 )
-for ticker, date in df: # name and ticker pairs
+for ticker, date in tqdm(df): # name and ticker pairs
     # get price
     try:
         bars = client.get_aggs(ticker=ticker, multiplier=1, timespan="day", from_=date, to=date)
