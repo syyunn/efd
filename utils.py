@@ -186,7 +186,6 @@ if __name__ == "__main__":
     # df = parse_annual(url="https://efdsearch.senate.gov//search/view/annual/2f72a35a-adad-4555-8341-01eacbd507d3/")
 
     from octopus.db import PostgresqlManager
-    import psycopg2
     pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.env")
     df = pm.execute_sql(fetchall=True, sql=
                    """select * from senate_annual sa 
