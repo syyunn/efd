@@ -193,9 +193,9 @@ if __name__ == "__main__":
     df = pm.execute_sql(fetchall=True, sql=
                    """select * from senate_annual sa 
                       inner join senator s on sa.url = s.url
-                      where report_type ilike '%annual%2019%' and s.congress = 118"""
+                      where report_type ilike '%annual%2018%' and s.congress = 118"""
                     )
-    df = df[40:] # this is to use in case of errors
+    # df = df[40:] # this is to use in case of errors
     for row in tqdm(df):
         url = row[5] #url of annual report
         print(url)
