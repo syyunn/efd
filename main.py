@@ -133,9 +133,9 @@ def scrape_insert_one_legislator(first_name, last_name, url):
 
 if __name__ == "__main__":
     from utils import get_senators
-    congress = 118
+    congress = 117
     print("Congress", congress)
-    df = get_senators(n_th_congress=congress)
+    df = get_senators(n_th_congress=congress) # this part can be replaced w/ db-fetch
     df = df.loc[16:, :]
     for row in df.itertuples():
         print(row.first_name, row.last_name, row.url)        
