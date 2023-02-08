@@ -38,3 +38,10 @@ CREATE TABLE senate_annual_4b(
 ALTER TABLE senate_annual_4b
 ADD CONSTRAINT senate_annual__4b_uniq UNIQUE (report_url, owner, ticker, ticker_url, asset_name, trans_type, trans_date, amount_min, amount_max, comment);
 
+CREATE TABLE price(
+    ticker text,
+    date text, 
+    vwap text)
+    ;
+ALTER TABLE price
+ADD CONSTRAINT price_uniq UNIQUE (ticker, date, vwap);
