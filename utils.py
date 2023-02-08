@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 from dateutil import parser
+from tqdm import tqdm
 
 def get_senators(n_th_congress, insert=False):
     wiki_url = f"https://en.wikipedia.org/wiki/List_of_United_States_senators_in_the_{n_th_congress}th_Congress"
@@ -70,13 +71,13 @@ def parse_annual(url, insert=True):
     from selenium.webdriver.chrome.options import Options
     from selenium.webdriver.common.by import By
 
-    chrome_options = Options()
-    chrome_options.add_experimental_option("detach", True)
-    chrome_options.add_argument("--headless") # only in case you wanna run it in headless
+    options = Options()
+    options.add_experimental_option("detach", True)
+    options.add_argument("--headless") # only in case you wanna run it in headless
     # from lobbyview.db import PostgresqlManager
 
     driver = webdriver.Chrome(
-        ChromeDriverManager().install(), chrome_options=chrome_options
+        ChromeDriverManager().install(), options=options
     )
 
     # get base url and click on agreement
@@ -194,7 +195,7 @@ if __name__ == "__main__":
                       inner join senator s on sa.url = s.url
                       where report_type ilike '%annual%2020%' and s.congress = 118"""
                     )
-    for row in df:
+    for row in tqdm(df):
         url = row[5] #url of annual report
         print(url)
         parse_annual(url=url)
