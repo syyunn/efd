@@ -8,14 +8,19 @@ result = pd.DataFrame({
         'cash(amount_max)': []
         })
 
-congress = 117
+congress = 118
 
 from octopus.db import PostgresqlManager
 pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.env")
 df = pm.execute_sql(fetchall=True, sql=
                 f"""
-                select distinct sa.first_name, sa.last_name, sb.ticker from senate_annual_4b sb
-   inner join senate_annual sa on sa.report_type_url  = sb.report_url
+                with union4ab as (
+select * from senate_annual_4a saa 
+union
+select * from senate_annual_4b sab 
+)
+                select distinct sa.first_name, sa.last_name, u.ticker from union4ab u
+   inner join senate_annual sa on sa.report_type_url  = u.report_url
    inner join senator s on s.url = sa.url
    where s.congress = {congress}
    order by first_name, last_name
@@ -25,10 +30,15 @@ for row in df: # name and ticker pairs
     backslash_char = '\''
     trnscs = pm.execute_sql(fetchall=True, sql=
                 f"""
-select distinct first_name, last_name, p.ticker, trans_type, trans_date, amount_min, vwap, amount_max from senate_annual_4b sb 
-inner join senate_annual sa on sa.report_type_url  = sb.report_url 
-inner join price p on (p.ticker=sb.ticker and p.date=sb.trans_date)
-where first_name = {backslash_char}{row[0]}{backslash_char} and last_name = {backslash_char}{row[1]}{backslash_char} and sb.ticker = {backslash_char}{row[2]}{backslash_char}
+with union4ab as (
+select * from senate_annual_4a saa 
+union
+select * from senate_annual_4b sab 
+)
+select distinct first_name, last_name, p.ticker, trans_type, trans_date, amount_min, vwap, amount_max from union4ab u
+inner join senate_annual sa on sa.report_type_url  = u.report_url 
+inner join price p on (p.ticker=u.ticker and p.date=u.trans_date)
+where first_name = {backslash_char}{row[0]}{backslash_char} and last_name = {backslash_char}{row[1]}{backslash_char} and u.ticker = {backslash_char}{row[2]}{backslash_char} and vwap is not null
 order by trans_date asc
                 """
                 )

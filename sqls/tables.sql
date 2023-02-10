@@ -23,6 +23,23 @@ CREATE TABLE senate_annual (
 ALTER TABLE senate_annual
 ADD CONSTRAINT senate_annual_uniq UNIQUE (url, first_name, last_name, office, report_type, report_type_url, date_received);
 
+CREATE TABLE senate_annual_4a(
+    report_url text,
+    owner text, 
+    ticker text, 
+    ticker_url text, 
+    asset_name text, 
+    trans_type text, 
+    trans_date date, 
+    amount_min bigint, 
+    amount_max bigint, 
+    comment text)
+    ;
+ALTER TABLE senate_annual_4a
+ADD CONSTRAINT senate_annual__4a_uniq UNIQUE (report_url, owner, ticker, ticker_url, asset_name, trans_type, trans_date, amount_min, amount_max, comment);
+
+
+
 CREATE TABLE senate_annual_4b(
     report_url text,
     owner text, 

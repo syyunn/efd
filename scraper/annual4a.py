@@ -4,7 +4,7 @@ from dateutil import parser
 from tqdm import tqdm
 
 
-def parse_annual(url, insert=True):
+def parse_annual4a(url, insert=True):
     import selenium
     from selenium import webdriver
     from webdriver_manager.chrome import ChromeDriverManager
@@ -31,12 +31,15 @@ def parse_annual(url, insert=True):
 
     bs = BeautifulSoup(html, "html.parser")
     sections = bs.find_all("section")
-    p4a = sections[3]
+    try:
+        p4a = sections[3]
+    except IndexError as e: # means no filings
+        return None
     tbody = p4a.find("tbody") # this locates part4b transactions
     if tbody:
         trs = tbody.find_all("tr")
     else:
-        return None
+        return None # end this function
 
     df = pd.DataFrame({
         'report_url': [],
@@ -62,7 +65,9 @@ def parse_annual(url, insert=True):
                 else:
                     ticker_url = None
             else:
-                ticker = tds[4].text
+                ticker = tds[4].text.replace('\n', '').replace('--', '').strip()
+                if ticker == '':
+                    ticker = None
                 ticker_url = None
 
             asset_name = tds[5].text.replace('\n', '').strip()
@@ -83,7 +88,7 @@ def parse_annual(url, insert=True):
                 import psycopg2
                 pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.env")
                 sql_insert_client_name_and_url = """
-                INSERT INTO senate_annual_4b(report_url, owner, ticker, ticker_url, asset_name, trans_type, trans_date, amount_min, amount_max, comment)
+                INSERT INTO senate_annual_4a(report_url, owner, ticker, ticker_url, asset_name, trans_type, trans_date, amount_min, amount_max, comment)
                 VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
 
@@ -118,24 +123,25 @@ def parse_annual(url, insert=True):
     pass
 
 if __name__ == "__main__":
-    parse_annual(url='https://efdsearch.senate.gov/search/view/annual/f35244ce-9453-474b-81a9-8c16d7fdc89c/')
-    pass
-    # congress = 115
-    # years = reversed([year for year in range(2014, 2022)])
+    # parse_annual4a(url='https://efdsearch.senate.gov/search/view/annual/f35244ce-9453-474b-81a9-8c16d7fdc89c/')
+    # pass
 
-    # for year in years:
-    #     print("congress, year:", congress, year)
-    #     from octopus.db import PostgresqlManager
-    #     pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.env")
-    #     df = pm.execute_sql(fetchall=True, sql=
-    #                 f"""select * from senate_annual sa 
-    #                     inner join senator s on sa.url = s.url
-    #                     where report_type ilike '%annual%{year}%' and s.congress = {congress}"""
-    #                     )
-    #     # df = df[36:] # this is to restart from somewhere in case of errors
-    #     for row in tqdm(df):
-    #         url = row[5] #url of annual report
-    #         print(url)
-    #         parse_annual(url=url)
-    #     pass
-    #     pass
+    congress = 116
+    years = reversed([year for year in range(2021, 2022)])
+
+    for year in years:
+        print("congress, year:", congress, year)
+        from octopus.db import PostgresqlManager
+        pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.env")
+        df = pm.execute_sql(fetchall=True, sql=
+                    f"""select * from senate_annual sa 
+                        inner join senator s on sa.url = s.url
+                        where report_type ilike '%annual%{year}%' and s.congress = {congress}"""
+                        )
+        # df = df[36:] # this is to restart from somewhere in case of errors
+        for row in tqdm(df):
+            url = row[5] #url of annual report
+            print(url)
+            parse_annual4a(url=url)
+        pass
+        pass
