@@ -7,14 +7,16 @@ result = pd.DataFrame({
         'cash': []
         })
 
+congress = 117
+
 from octopus.db import PostgresqlManager
 pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.env")
 df = pm.execute_sql(fetchall=True, sql=
-                """
+                f"""
                 select distinct sa.first_name, sa.last_name, sb.ticker from senate_annual_4b sb
    inner join senate_annual sa on sa.report_type_url  = sb.report_url
    inner join senator s on s.url = sa.url
-   where s.congress = 118
+   where s.congress = {congress}
    order by first_name, last_name
                 """
                 )
