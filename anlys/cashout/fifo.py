@@ -15,7 +15,14 @@ result = pd.DataFrame({
         'buy(amount_max)': [],
         'cashout(amount_max)': [],
         'matched_buy (amount_max)': [],
-        'return(amount_max)': []
+        'return(amount_max)': [],
+
+        'cash(amount_med)': [], # median of the amount_min and amount_max
+        'buy(amount_med)': [],
+        'cashout(amount_med)': [],
+        'matched_buy (amount_med)': [],
+        'return(amount_med)': []
+
         })
 
 congress = 118
@@ -56,9 +63,11 @@ for row in df: # name and ticker pairs
     if len(trnscs) >1: # for the case of ticker is None
         cash_amin = 0
         cash_amax = 0
+        cash_amed = 0
 
         purchase_units_amin = []
         purchase_units_amax = []
+        purchase_units_amed = []
 
         cashout_amin = 0
         buy_amin = 0 # this is the sum of the money spent on buying stocks and securities
@@ -68,6 +77,10 @@ for row in df: # name and ticker pairs
         buy_amax = 0 # this is the sum of the money spent on buying stocks and securities
         matched_buy_amax = 0
 
+        cashout_amed = 0
+        buy_amed = 0 # this is the sum of the money spent on buying stocks and securities
+        matched_buy_amed = 0
+
         trnsc_types = [trnsc[3] for trnsc in trnscs]
         for idx, trnsc in enumerate(trnscs): # all transactions of a name and ticker pair
             ticker = trnsc[2]
@@ -76,6 +89,9 @@ for row in df: # name and ticker pairs
             amount_min = trnsc[5]
             vwap = trnsc[6]
             amount_max = trnsc[7]
+            print("amount_min/max: ", amount_min, amount_max)
+            weight = 0.9
+            amount_med = weight * amount_min + (1-weight) * amount_max 
 
             future_transactions = trnsc_types[idx+1:]
             if "Purchase" in ps and set(["Purchase"]) == set(future_transactions): # if there's no more sales, just end the loop
@@ -104,25 +120,32 @@ for row in df: # name and ticker pairs
                             purchase_units[idx] = (stock - units, purchase_price)
                             matched_buy += units * purchase_price
                             cash_out += units * vwap
-                            cash += units * vwap
-                            
+                            cash += units * vwap                            
                 return purchase_units, cash, buy, cash_out, matched_buy
 
             purchase_units_amin, cash_amin, buy_amin, cashout_amin, matched_buy_amin   = _cash_out(purchase_units_amin, cash_amin, ps, amount_min, vwap, buy_amin, cashout_amin, matched_buy_amin)
             purchase_units_amax, cash_amax, buy_amax, cashout_amax, matched_buy_amax = _cash_out(purchase_units_amax, cash_amax, ps, amount_max, vwap, buy_amax, cashout_amax, matched_buy_amax)
-
+            purchase_units_amed, cash_amed, buy_amed, cashout_amed, matched_buy_amed = _cash_out(purchase_units_amed, cash_amed, ps, amount_med, vwap, buy_amed, cashout_amed, matched_buy_amed)
             pass
 
         return_amin = (cashout_amin - abs(matched_buy_amin)) * 100 / abs(matched_buy_amin) if matched_buy_amin != 0 else 0
         return_amax = (cashout_amax - abs(matched_buy_amin)) * 100/ abs(matched_buy_amax) if matched_buy_amax != 0 else 0
+        return_amed = (cashout_amed - abs(matched_buy_amin)) * 100/ abs(matched_buy_amed) if matched_buy_amed != 0 else 0
 
         result.loc[len(result.index)] = [row[0], row[1], #name
                                          row[2], #tiker
                                          cash_amin, buy_amin, cashout_amin,  matched_buy_amin, return_amin, 
-                                         cash_amax, buy_amax, cashout_amax, matched_buy_amax, return_amax]
-
-        # result.loc[len(result.index)] = [row[0], row[1], row[2], cash_amin, buy_amin, cashout_amin,  matched_buy_amin, return_amin, cash_amax, buy_amax, cashout_amax, matched_buy_amax, return_amax]  
-        print(row[0], row[1], row[2], cash_amin, buy_amin, cashout_amin, matched_buy_amin, return_amin, cash_amax, buy_amax, cashout_amax, matched_buy_amax, return_amax)
-
+                                         cash_amax, buy_amax, cashout_amax, matched_buy_amax, return_amax,
+                                         cash_amed, buy_amed, cashout_amed, matched_buy_amed, return_amed]
+        
+        print(row[0], row[1], row[2], cash_amin, buy_amin, cashout_amin, matched_buy_amin, return_amin, cash_amax, buy_amax, cashout_amax, matched_buy_amax, return_amax, cash_amed, buy_amed, cashout_amed, matched_buy_amed, return_amed)    
     pass
+
+def _get_above_return_ratio(amount="amount_min", return_threshold=0):
+    return len(result[result[f'return({amount})'] > return_threshold])/len(result) * 100
+
+ratio_min = _get_above_return_ratio("amount_min")
+ratio_max = _get_above_return_ratio("amount_max")
+ratio_med = _get_above_return_ratio("amount_med")
+
 pass
