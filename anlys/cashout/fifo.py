@@ -4,14 +4,18 @@ result = pd.DataFrame({
         'first_name': [],
         'last_name': [],
         'ticker': [],
+
         'cash(amount_min)': [],
         'buy(amount_min)': [],
         'cashout(amount_min)': [],
+        'matched_buy (amount_min)': [],
         'return(amount_min)': [],
+
         'cash(amount_max)': [],
         'buy(amount_max)': [],
         'cashout(amount_max)': [],
-        'return(amount_max)': [],
+        'matched_buy (amount_max)': [],
+        'return(amount_max)': []
         })
 
 congress = 118
@@ -28,7 +32,7 @@ df = pm.execute_sql(fetchall=True, sql=
                 select distinct sa.first_name, sa.last_name, u.ticker from union4ab u
                     inner join senate_annual sa on sa.report_type_url  = u.report_url
                     inner join senator s on s.url = sa.url
-                    where s.congress = {congress}
+                    -- where s.congress = {congress}
                 order by first_name, last_name
                 """
                 )
@@ -58,9 +62,11 @@ for row in df: # name and ticker pairs
 
         cashout_amin = 0
         buy_amin = 0 # this is the sum of the money spent on buying stocks and securities
+        matched_buy_amin = 0
 
         cashout_amax = 0
         buy_amax = 0 # this is the sum of the money spent on buying stocks and securities
+        matched_buy_amax = 0
 
         trnsc_types = [trnsc[3] for trnsc in trnscs]
         for idx, trnsc in enumerate(trnscs): # all transactions of a name and ticker pair
@@ -72,40 +78,51 @@ for row in df: # name and ticker pairs
             amount_max = trnsc[7]
 
             future_transactions = trnsc_types[idx+1:]
-            if "Purchase" in ps and set(["Purchase"]) == set(future_transactions):
+            if "Purchase" in ps and set(["Purchase"]) == set(future_transactions): # if there's no more sales, just end the loop
                 break
 
-            def _cash_out(purchase_units, cash, ps, amount, vwap, buy, cashout):
-                current_holdings = sum(purchase_units)
-
+            def _cash_out(purchase_units, cash, ps, amount, vwap, buy, cash_out, matched_buy):
                 if "Purchase" in ps:
                     units = amount / vwap # this is the minimum amount of units purchased
-                    purchase_units.append(units)
+                    purchase_units.append((units, vwap))
                     cash -= amount
-                    buy -= amount
+                    buy += amount
                 elif "Sale" in ps:
                     units = amount / vwap # minimum units estimated as being sold.
-                    if units > current_holdings: # this means we're missing previous data about purchasement
-                        purchase_units.append(-current_holdings) # sell all of the holdings
-                        cash_out = current_holdings * vwap
-                        cash += cash_out
-                        cashout += cash_out
-                    else:
-                        purchase_units.append(-units)
-                        cash_out = units * vwap
-                        cash += cash_out
-                        cashout += cash_out
-                return purchase_units, cash, buy, cashout
+                    for idx, purchase in enumerate(purchase_units):
+                        stock, purchase_price = purchase
+                        if units == 0:
+                            break                           
+                        if units >= stock:
+                            units -= stock
+                            purchase_units[idx] = (0, purchase_price)
+                            matched_buy += stock * purchase_price
+                            cash_out += stock * vwap
+                            cash += stock * vwap
+                        elif units < stock:
+                            units -= units
+                            purchase_units[idx] = (stock - units, purchase_price)
+                            matched_buy += units * purchase_price
+                            cash_out += units * vwap
+                            cash += units * vwap
+                            
+                return purchase_units, cash, buy, cash_out, matched_buy
 
-            purchase_units_amin, cash_amin, buy_amin, cashout_amin   = _cash_out(purchase_units_amin, cash_amin, ps, amount_min, vwap, buy_amin, cashout_amin)
-            purchase_units_amax, cash_amax, buy_amax, cashout_amax = _cash_out(purchase_units_amax, cash_amax, ps, amount_max, vwap, buy_amax, cashout_amax)
+            purchase_units_amin, cash_amin, buy_amin, cashout_amin, matched_buy_amin   = _cash_out(purchase_units_amin, cash_amin, ps, amount_min, vwap, buy_amin, cashout_amin, matched_buy_amin)
+            purchase_units_amax, cash_amax, buy_amax, cashout_amax, matched_buy_amax = _cash_out(purchase_units_amax, cash_amax, ps, amount_max, vwap, buy_amax, cashout_amax, matched_buy_amax)
+
             pass
 
-        return_amin = cashout_amin * 100 / abs(buy_amin) if buy_amin != 0 else 0
-        return_amax = cashout_amax * 100/ abs(buy_amax) if buy_amax != 0 else 0
-        
-        result.loc[len(result.index)] = [row[0], row[1], row[2], cash_amin, buy_amin, cashout_amin,  return_amin, cash_amax, buy_amax, cashout_amax, return_amax]  
-        print(row[0], row[1], row[2], cash_amin, buy_amin, cashout_amin, return_amin, cash_amax, buy_amax, cashout_amax, return_amax)
+        return_amin = (cashout_amin - abs(matched_buy_amin)) * 100 / abs(matched_buy_amin) if matched_buy_amin != 0 else 0
+        return_amax = (cashout_amax - abs(matched_buy_amin)) * 100/ abs(matched_buy_amax) if matched_buy_amax != 0 else 0
+
+        result.loc[len(result.index)] = [row[0], row[1], #name
+                                         row[2], #tiker
+                                         cash_amin, buy_amin, cashout_amin,  matched_buy_amin, return_amin, 
+                                         cash_amax, buy_amax, cashout_amax, matched_buy_amax, return_amax]
+
+        # result.loc[len(result.index)] = [row[0], row[1], row[2], cash_amin, buy_amin, cashout_amin,  matched_buy_amin, return_amin, cash_amax, buy_amax, cashout_amax, matched_buy_amax, return_amax]  
+        print(row[0], row[1], row[2], cash_amin, buy_amin, cashout_amin, matched_buy_amin, return_amin, cash_amax, buy_amax, cashout_amax, matched_buy_amax, return_amax)
 
     pass
 pass
