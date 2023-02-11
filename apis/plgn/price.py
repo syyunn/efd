@@ -28,6 +28,8 @@ INSERT INTO price(ticker, date, vwap)
 VALUES(%s, %s, %s)
 """
 
+ticker = "AAPL"
+date = "2020-01-01"
 for ticker, date in tqdm(df): # name and ticker pairs
     # get price
     try:

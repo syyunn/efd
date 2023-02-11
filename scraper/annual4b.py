@@ -118,8 +118,8 @@ def parse_annual(url, insert=True):
     pass
 
 if __name__ == "__main__":
-    congress = 115
-    years = reversed([year for year in range(2014, 2022)])
+    congress = 114
+    years = reversed([year for year in range(2014, 2021)])
 
     for year in years:
         print("congress, year:", congress, year)

@@ -5,7 +5,11 @@ result = pd.DataFrame({
         'last_name': [],
         'ticker': [],
         'cash(amount_min)': [],
-        'cash(amount_max)': []
+        'buy(amount_min)': [],
+        'cashout(amount_min)': [],
+        'cash(amount_max)': [],
+        'buy(amount_max)': [],
+        'cashout(amount_max)': [],
         })
 
 congress = 118
@@ -50,6 +54,12 @@ order by trans_date asc
         purchase_units_amin = []
         purchase_units_amax = []
 
+        cashout_amin = 0
+        buy_amin = 0 # this is the sum of the money spent on buying stocks and securities
+
+        cashout_amax = 0
+        buy_amax = 0 # this is the sum of the money spent on buying stocks and securities
+
         for trnsc in trnscs: # all transactions of a name and ticker pair
             ticker = trnsc[2]
             ps = trnsc[3] # purchase or sale
@@ -58,31 +68,33 @@ order by trans_date asc
             vwap = trnsc[6]
             amount_max = trnsc[7]
             
-            def _cash_out(purchase_units, cash, ps, amount, vwap):
+            def _cash_out(purchase_units, cash, ps, amount, vwap, buy, cashout):
                 current_holdings = sum(purchase_units)
 
                 if "Purchase" in ps:
                     units = amount / vwap # this is the minimum amount of units purchased
                     purchase_units.append(units)
                     cash -= amount
+                    buy -= amount
                 elif "Sale" in ps:
                     units = amount / vwap # minimum units estimated as being sold.
                     if units > current_holdings: # this means we're missing previous data about purchasement
                         purchase_units.append(-current_holdings) # sell all of the holdings
                         cash_out = current_holdings * vwap
-                        cash += cash_out                    
+                        cash += cash_out
+                        cashout += cash_out
                     else:
                         purchase_units.append(-units)
                         cash_out = units * vwap
                         cash += cash_out
-                return purchase_units, cash
+                        cashout += cash_out
+                return purchase_units, cash, buy, cashout
 
-            purchase_units_amin, cash_amin = _cash_out(purchase_units_amin, cash_amin, ps, amount_min, vwap)
-            purchase_units_amax, cash_amax = _cash_out(purchase_units_amax, cash_amax, ps, amount_max, vwap)
+            purchase_units_amin, cash_amin, buy_amin, cashout_amin   = _cash_out(purchase_units_amin, cash_amin, ps, amount_min, vwap, buy_amin, cashout_amin)
+            purchase_units_amax, cash_amax, buy_amax, cashout_amax = _cash_out(purchase_units_amax, cash_amax, ps, amount_max, vwap, buy_amax, cashout_amax)
             pass
-        result.loc[len(result.index)] = [row[0], row[1], row[2], cash_amin, cash_amax]  
-        print(row[0], row[1], row[2], cash_amin, cash_amax)
-
+        result.loc[len(result.index)] = [row[0], row[1], row[2], cash_amin, buy_amin, cashout_amin, cash_amax, buy_amax, cashout_amax]  
+        print(row[0], row[1], row[2], cash_amin, buy_amin, cashout_amin, cash_amax, buy_amax, cashout_amax)
 
     pass
 pass

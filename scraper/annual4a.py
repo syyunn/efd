@@ -5,7 +5,6 @@ from tqdm import tqdm
 
 
 def parse_annual4a(url, insert=True):
-    import selenium
     from selenium import webdriver
     from webdriver_manager.chrome import ChromeDriverManager
     from selenium.webdriver.chrome.options import Options
@@ -126,8 +125,8 @@ if __name__ == "__main__":
     # parse_annual4a(url='https://efdsearch.senate.gov/search/view/annual/f35244ce-9453-474b-81a9-8c16d7fdc89c/')
     # pass
 
-    congress = 116
-    years = reversed([year for year in range(2021, 2022)])
+    congress = 114
+    years = reversed([year for year in range(2014, 2021)])
 
     for year in years:
         print("congress, year:", congress, year)
@@ -144,4 +143,4 @@ if __name__ == "__main__":
             print(url)
             parse_annual4a(url=url)
         pass
-        pass
+    pass
