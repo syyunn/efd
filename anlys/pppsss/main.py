@@ -1,6 +1,8 @@
 import pandas as pd
 from tqdm import tqdm
 
+### DO NOT DELETE THIS COMMENT BLOCK ###
+
 # congress = 118
 
 # from octopus.db import PostgresqlManager
@@ -80,7 +82,12 @@ for chain in chains:
     avg_purchase_price = sum(puchase_prices)/len(puchase_prices)
     avg_sale_price = sum(sale_prices)/len(sale_prices)
 
-    normalized_avg_margins.append((avg_sale_price - avg_purchase_price)/avg_purchase_price)
+    normalized_avg_margins.append((avg_sale_price - avg_purchase_price)*100/avg_purchase_price)
+
+threshold = 5
+print(len([margin for margin in normalized_avg_margins if margin > threshold]))
+print(len([margin for margin in normalized_avg_margins if margin < threshold]))
+print(len([margin for margin in normalized_avg_margins if margin == threshold]))
 
 import matplotlib.pyplot as plt
 
@@ -100,3 +107,17 @@ plt.savefig("./anlys/pppsss/normalized_avg_margins.png")
 # plt.show()
 # plt.close()
 pass
+
+import numpy as np
+
+# Define a sample list
+# Find the index of the top 5 largest elements
+top_5_indices = np.argsort(normalized_avg_margins)[-5:]
+
+# Print the index of the top 5 largest elements
+print("The index of the top 5 largest elements:", top_5_indices)
+print(np.array(normalized_avg_margins)[top_5_indices])
+print(np.array(chains)[top_5_indices[-5]])
+
+# draw with pppssss w/ graph
+# filter to compare with that periods' S&P 500
