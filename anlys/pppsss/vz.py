@@ -31,16 +31,25 @@ plt.show()
 # plt.close()
 pass
 
-# import numpy as np
+alphas = [margin-spy for margin, spy in zip(chanmavg_margins, chanmavg_margins_spy)]
+bulls = [margin-spy for margin, spy in zip(chanmavg_margins, chanmavg_margins_spy) if margin > spy]
+bears = [margin-spy for margin, spy in zip(chanmavg_margins, chanmavg_margins_spy) if margin < spy]
+evens = [margin-spy for margin, spy in zip(chanmavg_margins, chanmavg_margins_spy) if margin == spy]
 
-# # Define a sample list
-# # Find the index of the top 5 largest elements
-# top_5_indices = np.argsort(normalized_avg_margins)[-5:]
+print(sum(bulls)/len(bulls))
+print(sum(bears)/len(bears))
+print(sum(evens)/len(evens))
+print(sum(alphas)/len(alphas))
 
-# # Print the index of the top 5 largest elements
-# print("The index of the top 5 largest elements:", top_5_indices)
-# print(np.array(normalized_avg_margins)[top_5_indices])
-# print(np.array(chains)[top_5_indices[-5]])
+import matplotlib.pyplot as plt
+import numpy as np
 
-# # draw with pppssss w/ graph
-# # filter to compare with that periods' S&P 500
+# List of floats
+
+# Plot density using a kernel density estimation (KDE)
+density = np.array(alphas)
+plt.hist(density, bins=100, density=True, alpha=0.7, color='b')
+plt.title('Density Plot of Data')
+plt.xlabel('Value')
+plt.ylabel('Density')
+plt.show()

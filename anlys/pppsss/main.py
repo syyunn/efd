@@ -107,14 +107,15 @@ for chain in tqdm(chains):
         else:
             sale_prices.append(trnsc[6])
             sale_spy_prices.append(spy)
+
     avg_purchase_price = sum(puchase_prices)/len(puchase_prices)
     avg_sale_price = sum(sale_prices)/len(sale_prices)
     
     avg_purchase_spy_price = sum(purchase_spy_prices)/len(purchase_spy_prices)
     avg_sale_spy_price = sum(sale_spy_prices)/len(sale_spy_prices)
 
-    normalized_avg_margins.append((avg_sale_price - avg_purchase_price)*100/avg_purchase_price)
-    normalized_avg_margins_spy.append((avg_sale_spy_price - avg_purchase_spy_price)*100/avg_purchase_spy_price)
+    normalized_avg_margins.append((avg_sale_price - avg_purchase_price)/avg_purchase_price)
+    normalized_avg_margins_spy.append((avg_sale_spy_price - avg_purchase_spy_price)/avg_purchase_spy_price)
     pass
 
 with open("./anlys/pppsss/nmavg_margins.pickle", "wb") as f:
@@ -122,49 +123,49 @@ with open("./anlys/pppsss/nmavg_margins.pickle", "wb") as f:
 with open("./anlys/pppsss/nmavg_margins_spy.pickle", "wb") as f:
     pickle.dump(normalized_avg_margins_spy, f)
 
-# whether beats the market by manual threshold
-threshold = 5
-print(len([margin for margin in normalized_avg_margins if margin > threshold]))
-print(len([margin for margin in normalized_avg_margins if margin < threshold]))
-print(len([margin for margin in normalized_avg_margins if margin == threshold]))
+# # whether beats the market by manual threshold
+# threshold = 5
+# print(len([margin for margin in normalized_avg_margins if margin > threshold]))
+# print(len([margin for margin in normalized_avg_margins if margin < threshold]))
+# print(len([margin for margin in normalized_avg_margins if margin == threshold]))
 
-# whether beats the market over passive index fund
-print(len([margin-spy for margin, spy in zip(normalized_avg_margins, normalized_avg_margins_spy) if margin > spy]))
-print(len([margin-spy for margin, spy in zip(normalized_avg_margins, normalized_avg_margins_spy) if margin < spy]))
-print(len([margin-spy for margin, spy in zip(normalized_avg_margins, normalized_avg_margins_spy) if margin == spy]))
+# # whether beats the market over passive index fund
+# print(len([margin-spy for margin, spy in zip(normalized_avg_margins, normalized_avg_margins_spy) if margin > spy]))
+# print(len([margin-spy for margin, spy in zip(normalized_avg_margins, normalized_avg_margins_spy) if margin < spy]))
+# print(len([margin-spy for margin, spy in zip(normalized_avg_margins, normalized_avg_margins_spy) if margin == spy]))
 
-# how strongly they've beaten the market
+# # how strongly they've beaten the market
 
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
-# Define the data for the plot
-x = normalized_avg_margins
-y = [0 for _ in normalized_avg_margins]
+# # Define the data for the plot
+# x = normalized_avg_margins
+# y = [0 for _ in normalized_avg_margins]
 
-# Create the plot
-plt.scatter(x, y)
+# # Create the plot
+# plt.scatter(x, y)
 
-# Add labels to the axes
-plt.xlabel('X axis')
-plt.ylabel('Y axis')
+# # Add labels to the axes
+# plt.xlabel('X axis')
+# plt.ylabel('Y axis')
 
-# Show the plot
-plt.savefig("./anlys/pppsss/normalized_avg_margins.png")
-# plt.show()
-# plt.close()
-pass
+# # Show the plot
+# plt.savefig("./anlys/pppsss/normalized_avg_margins.png")
+# # plt.show()
+# # plt.close()
+# pass
 
-import numpy as np
+# import numpy as np
 
-# Define a sample list
-# Find the index of the top 5 largest elements
-top_5_indices = np.argsort(normalized_avg_margins)[-5:]
+# # Define a sample list
+# # Find the index of the top 5 largest elements
+# top_5_indices = np.argsort(normalized_avg_margins)[-5:]
 
-# Print the index of the top 5 largest elements
-print("The index of the top 5 largest elements:", top_5_indices)
-print(np.array(normalized_avg_margins)[top_5_indices])
-print(np.array(chains)[top_5_indices[-5]])
+# # Print the index of the top 5 largest elements
+# print("The index of the top 5 largest elements:", top_5_indices)
+# print(np.array(normalized_avg_margins)[top_5_indices])
+# print(np.array(chains)[top_5_indices[-5]])
 
-# draw with pppssss w/ graph
-# filter to compare with that periods' S&P 500
+# # draw with pppssss w/ graph
+# # filter to compare with that periods' S&P 500
