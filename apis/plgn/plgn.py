@@ -1,8 +1,6 @@
 from polygon import RESTClient
-import polygon
 from dotenv import load_dotenv
 import os
-import pandas as pd
 
 env = load_dotenv('/Users/syyun/Dropbox (MIT)/efd/.env')
 api_key = os.getenv("POLYGON_APIKEY")
@@ -15,6 +13,11 @@ def get_price_change(ticker, date1, date2, amnt=15000):
     units = amnt / bars[0].vwap
     return (bars[1].vwap - bars[0].vwap) * units
 
-print(get_price_change("BND", "2021-06-04", "2021-12-16"))
+def get_price(ticker, date):
+    bars = client.get_aggs(ticker=ticker, multiplier=1, timespan="day", from_=date, to=date)
+    return bars[0].vwap
 
+if __name__ == "__main__":
+    print(get_price("SPY", "2021-06-04"))      
+    print(get_price_change("SPY", "2021-06-04", "2021-12-16"))
 pass

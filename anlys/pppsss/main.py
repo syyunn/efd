@@ -1,6 +1,20 @@
 import pandas as pd
 from tqdm import tqdm
 
+import polygon
+from polygon import RESTClient
+from dotenv import load_dotenv
+import os
+
+env = load_dotenv('/Users/syyun/Dropbox (MIT)/efd/.env')
+api_key = os.getenv("POLYGON_APIKEY")
+print(api_key)
+client = RESTClient(api_key=api_key)
+
+def get_price(ticker, date):
+    bars = client.get_aggs(ticker=ticker, multiplier=1, timespan="day", from_=date, to=date)
+    return bars[0].vwap
+
 ### DO NOT DELETE THIS COMMENT BLOCK ###
 
 # congress = 118
@@ -70,24 +84,57 @@ import pickle
 with open("./anlys/pppsss/chains.pickle", "rb") as f:
     chains = pickle.load(f)
 
-normalized_avg_margins =[]    
-for chain in chains:
+normalized_avg_margins =[]   
+normalized_avg_margins_spy =[]
+
+for chain in tqdm(chains):
     puchase_prices =[]
     sale_prices = []
+
+    purchase_spy_prices = []
+    sale_spy_prices = []
+
     for trnsc in chain:
+        date = trnsc[4]
+        try:
+            spy = get_price('SPY', date)
+        except polygon.exceptions.NoResultsError as e:
+            print('SPY', date, e)
+        
         if trnsc[3] == 'Purchase':
             puchase_prices.append(trnsc[6])
+            purchase_spy_prices.append(spy)
         else:
             sale_prices.append(trnsc[6])
+            sale_spy_prices.append(spy)
     avg_purchase_price = sum(puchase_prices)/len(puchase_prices)
     avg_sale_price = sum(sale_prices)/len(sale_prices)
+    
+    avg_purchase_spy_price = sum(purchase_spy_prices)/len(purchase_spy_prices)
+    avg_sale_spy_price = sum(sale_spy_prices)/len(sale_spy_prices)
 
     normalized_avg_margins.append((avg_sale_price - avg_purchase_price)*100/avg_purchase_price)
+    normalized_avg_margins_spy.append((avg_sale_spy_price - avg_purchase_spy_price)*100/avg_purchase_spy_price)
+    pass
 
+with open("./anlys/pppsss/nmavg_margins.pickle", "wb") as f:
+    pickle.dump(normalized_avg_margins, f)
+with open("./anlys/pppsss/nmavg_margins_spy.pickle", "wb") as f:
+    pickle.dump(normalized_avg_margins_spy, f)
+
+# whether beats the market by manual threshold
 threshold = 5
 print(len([margin for margin in normalized_avg_margins if margin > threshold]))
 print(len([margin for margin in normalized_avg_margins if margin < threshold]))
 print(len([margin for margin in normalized_avg_margins if margin == threshold]))
+
+# whether beats the market over passive index fund
+print(len([margin-spy for margin, spy in zip(normalized_avg_margins, normalized_avg_margins_spy) if margin > spy]))
+print(len([margin-spy for margin, spy in zip(normalized_avg_margins, normalized_avg_margins_spy) if margin < spy]))
+print(len([margin-spy for margin, spy in zip(normalized_avg_margins, normalized_avg_margins_spy) if margin == spy]))
+
+# how strongly they've beaten the market
+
 
 import matplotlib.pyplot as plt
 
