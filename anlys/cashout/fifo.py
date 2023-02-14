@@ -94,7 +94,7 @@ for row in df: # name and ticker pairs
             amount_med = weight * amount_min + (1-weight) * amount_max 
 
             future_transactions = trnsc_types[idx+1:]
-            if "Purchase" in ps and set(["Purchase"]) == set(future_transactions): # if there's no more sales, just end the loop
+            if "Purchase" in ps and set(["Purchase"]) == set(future_transactions): # if there's no more sales in the future, just end the loop
                 break
 
             def _cash_out(purchase_units, cash, ps, amount, vwap, buy, cash_out, matched_buy):
@@ -148,4 +148,18 @@ ratio_min = _get_above_return_ratio("amount_min")
 ratio_max = _get_above_return_ratio("amount_max")
 ratio_med = _get_above_return_ratio("amount_med")
 
-pass
+import pickle
+with open("./anlys/cashout/fifo-result.pickle", "wb") as f:
+    pickle.dump(result, f)
+
+
+# # Plot density using a kernel density estimation (KDE)
+# import numpy as np
+# import matplotlib.pyplot as plt
+# density = np.array(result['return(amount_min))'])
+# plt.hist(density, bins=100, density=True, alpha=0.7, color='b')
+# plt.title('Density Plot of Data')
+# plt.xlabel('Value')
+# plt.ylabel('Density')
+# plt.show()
+# pass
