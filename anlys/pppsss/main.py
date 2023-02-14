@@ -6,6 +6,8 @@ from polygon import RESTClient
 from dotenv import load_dotenv
 import os
 
+import numpy as np
+
 env = load_dotenv('/Users/syyun/Dropbox (MIT)/efd/.env')
 api_key = os.getenv("POLYGON_APIKEY")
 print(api_key)

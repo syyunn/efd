@@ -8,25 +8,9 @@ result = pd.DataFrame({
         'first_name': [],
         'last_name': [],
         'ticker': [],
-
-        'cash(amount_min)': [],
-        'buy(amount_min)': [],
-        'cashout(amount_min)': [],
-        'matched_buy (amount_min)': [],
-        'return(amount_min)': [],
-
-        'cash(amount_max)': [],
-        'buy(amount_max)': [],
-        'cashout(amount_max)': [],
-        'matched_buy (amount_max)': [],
-        'return(amount_max)': [],
-
-        'cash(amount_med)': [], # median of the amount_min and amount_max
-        'buy(amount_med)': [],
-        'cashout(amount_med)': [],
-        'matched_buy (amount_med)': [],
-        'return(amount_med)': []
-
+        # 'returns': [],
+        'return(mean)': [],
+        'return(std)': []
         })
 
 congress = 118
@@ -83,8 +67,6 @@ for row in df: # name and ticker pairs
     #     continue
 
     return_rds = []
-    return_rd_mean_prev = 0.1
-    return_rd_std_prev = 0.1
 
     i = 0
     def compute_return_rd():
@@ -151,12 +133,8 @@ for row in df: # name and ticker pairs
     return_rd_mean_prev = np.mean(return_rds)
     return_rd_std_prev = np.std(return_rds)
 
-
-    if set(return_rds) == {0}:
-        continue
-
     print("entering while")
-    thres = 1e-5
+    thres = 1e-3
     while abs(return_rd_mean_prev-np.mean(return_rds)) >= thres and abs(return_rd_std_prev-np.std(return_rds)) >= thres:
         return_rd = compute_return_rd()
         print(return_rd)
@@ -165,16 +143,31 @@ for row in df: # name and ticker pairs
         return_rd_std_prev = np.std(return_rds)
     print("finish while")
 
-    print(np.mean(return_rds), np.std(return_rds))
+    print(row, np.mean(return_rds), np.std(return_rds))
 
-    # Plot density using a kernel density estimation (KDE)
-    import numpy as np
-    import matplotlib.pyplot as plt
+    result.loc[len(result.index)] = [
+        row[0],
+        row[1],
+        row[2],
+        # return_rds,
+        np.mean(return_rds),
+        np.std(return_rds)
+    ]
+    pass
 
-    plt.hist(return_rds, bins=100, density=True, alpha=0.7, color='b')
-    plt.title('Density Plot of Data')
-    plt.xlabel('Value')
-    plt.ylabel('Density')
-    # plt.show()
-    plt.savefig(f'./anlys/cashout/rd-results/{row}.png')
-    plt.close()
+import pickle
+with open(f'./anlys/cashout/result-rd.pkl', 'wb') as f:
+    pickle.dump(result, f)
+
+    # # Plot density using a kernel density estimation (KDE)
+    # import numpy as np
+    # import matplotlib.pyplot as plt
+
+    # plt.hist(return_rds, bins=100, density=True, alpha=0.7, color='b')
+    # plt.title('Density Plot of Data')
+    # plt.xlabel('Value')
+    # plt.ylabel('Density')
+    # # plt.show()
+    # plt.savefig(f'./anlys/cashout/rd-results/{row}.png')
+    # plt.close()
+
