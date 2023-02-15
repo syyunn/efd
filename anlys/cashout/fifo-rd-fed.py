@@ -52,7 +52,7 @@ for row in df: # name and ticker pairs
                 select distinct first_name, last_name, p.ticker, trans_type, trans_date, amount_min, vwap, amount_max from union4ab u
                     inner join senate_annual sa on sa.report_type_url  = u.report_url 
                     inner join price p on (p.ticker=u.ticker and p.date=u.trans_date)
-                where first_name = {backslash_char}{row[0]}{backslash_char} and last_name = {backslash_char}{row[1]}{backslash_char} and u.ticker = {backslash_char}{row[2]}{backslash_char} and vwap is not null and u.ticker is not null
+                where first_name = {backslash_char}{row[0]}{backslash_char} and last_name = {backslash_char}{row[1]}{backslash_char} and u.ticker = {backslash_char}{row[2]}{backslash_char} and vwap is not null
                 order by trans_date asc
                 """
                 )
@@ -128,7 +128,7 @@ for row in df: # name and ticker pairs
         return_rd = (cashout_random - abs(matched_buy_random)) * 100 / abs(matched_buy_random) if matched_buy_random != 0 else 0
         return return_rd
 
-    warm_up = 100000
+    warm_up = 10000
     for i in range(warm_up):
         return_rd = compute_return_rd()
         return_rds.append(return_rd)
@@ -137,12 +137,15 @@ for row in df: # name and ticker pairs
     return_rd_std_prev = np.std(return_rds)
 
     thres = 1e-3
-    while abs(return_rd_mean_prev-np.mean(return_rds)) >= thres and abs(return_rd_std_prev-np.std(return_rds)) >= thres:
+    print("")
+    i = 0
+    while abs(return_rd_mean_prev-np.mean(return_rds)) >= thres and abs(return_rd_std_prev-np.std(return_rds)) >= thres and i < 10000:
         return_rd = compute_return_rd()
         print(return_rd)
         return_rds.append(return_rd)
         return_rd_mean_prev = np.mean(return_rds)
         return_rd_std_prev = np.std(return_rds)
+        i += 1
 
     print(row, np.mean(return_rds), np.std(return_rds))
 
@@ -157,7 +160,7 @@ for row in df: # name and ticker pairs
 
 
     # Plot density using a kernel density estimation (KDE)
-    import numpy as np
+    import numpy as np  
     import matplotlib.pyplot as plt
 
     plt.hist(return_rds, bins=100, density=True, alpha=0.7, color='b')
@@ -169,5 +172,5 @@ for row in df: # name and ticker pairs
     plt.close()
 
 import pickle
-with open(f'./anlys/cashout/result-rd.pkl', 'wb') as f:
+with open(f'./anlys/cashout/result-rd-fed.pkl', 'wb') as f:
     pickle.dump(result, f)

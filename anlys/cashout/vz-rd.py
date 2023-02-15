@@ -6,6 +6,7 @@ pass
 
 print(result['return(mean)'])
 
+df = result[['first_name', 'last_name', 'ticker', 'return(mean)']]
 
 # Plot density using a kernel density estimation (KDE)
 import numpy as np
@@ -24,3 +25,9 @@ plt.ylabel('Density')
 plt.show()
 
 print(np.mean(alphas))
+print(np.std(alphas))
+
+
+
+if __name__ == "__main__":
+    pass
