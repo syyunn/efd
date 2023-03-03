@@ -10,8 +10,8 @@ args = parser.parse_args()
 
 offset = args.batch_size * args.n_th_instance
 
-load_dotenv("/Users/syyun/Dropbox (MIT)/efd/.envlv", override=True)
-pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
+load_dotenv(".envlv", override=True)
+pm = PostgresqlManager(dotenv_path=".envlv")
 
 df = pm.execute_sql(fetchall=True, sql=
             f"""
@@ -71,10 +71,3 @@ for item in df:
         except psycopg2.errors.UniqueViolation as e:
             print(e)
             pass
-
-
-
-
-
-if __name__ == "__main__":
-    pass
