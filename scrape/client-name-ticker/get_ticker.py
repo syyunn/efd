@@ -18,7 +18,7 @@ df = pm.execute_sql(fetchall=True, sql=
             select distinct client_name from _sandbox_suyeol.client_ticker
             where ticker is null
             order by client_name asc
-            limit {args.batch_size} offset {args.offset}
+            limit {args.batch_size} offset {offset}
             """
                 )
 
