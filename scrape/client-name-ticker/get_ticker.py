@@ -10,8 +10,8 @@ args = parser.parse_args()
 
 offset = args.batch_size * args.n_th_instance
 
-load_dotenv(".envlv", override=True)
-pm = PostgresqlManager(dotenv_path=".envlv")
+load_dotenv("/home/ubuntu/efd/.envlv", override=True)
+pm = PostgresqlManager(dotenv_path="/home/ubuntu/efd/.envlv")
 
 df = pm.execute_sql(fetchall=True, sql=
             f"""
