@@ -53,7 +53,7 @@ for item in df:
         except psycopg2.errors.UniqueViolation as e:
             print(e)
     else:
-        ticker_content = ticker_content.textc
+        ticker_content = ticker_content.text
         exchange = ticker_content.split(":")[0].strip()
         ticker = ticker_content.split(":")[1].strip()
         print(exchange, ticker)
