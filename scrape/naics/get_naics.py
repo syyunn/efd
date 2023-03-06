@@ -4,7 +4,9 @@ import psycopg2
 from dotenv import load_dotenv
 # env = load_dotenv('/Users/syyun/Dropbox (MIT)/efd/.env')
 
-pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
+# pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
+pm = PostgresqlManager(dotenv_path="/home/ubuntu/.envlv")
+
 df = pm.execute_sql(fetchall=True, sql=
             f"""
              with arr_a as (
