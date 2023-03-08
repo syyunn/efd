@@ -62,3 +62,34 @@ CREATE TABLE price(
     ;
 ALTER TABLE price
 ADD CONSTRAINT price_uniq UNIQUE (ticker, date, vwap);
+
+
+CREATE TABLE _sandbox_suyeol.ticker_naics_url (
+    ticker text,
+    asset_name text,
+    naics_url text
+)
+
+ALTER TABLE _sandbox_suyeol.ticker_naics_url
+ADD CONSTRAINT _sandbox_suyeol_ticker_naics_url UNIQUE (ticker, asset_name, naics_url);
+
+CREATE TABLE _sandbox_suyeol.ticker_naics (
+    naics_url text,
+    duns text,
+    company_name text, 
+    trade_style text,
+    url text, 
+    naics1 text, 
+    naics1_desc text,  
+    naics2 text,
+    naics2_desc text, 
+    sic1 text, 
+    sic1_desc text, 
+    sic2 text, 
+    sic2_desc text, 
+    total_emp int, 
+    sales_volume bigint
+);
+
+ALTER TABLE _sandbox_suyeol.ticker_naics
+ADD CONSTRAINT _sandbox_suyeol_ticker_naics UNIQUE (naics_url);
