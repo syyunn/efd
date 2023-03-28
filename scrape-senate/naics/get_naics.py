@@ -4,8 +4,8 @@ import psycopg2
 from dotenv import load_dotenv
 # env = load_dotenv('/Users/syyun/Dropbox (MIT)/efd/.env')
 
-# pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
-pm = PostgresqlManager(dotenv_path="/home/ubuntu/.envlv")
+pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
+# pm = PostgresqlManager(dotenv_path="/home/ubuntu/.envlv")
 
 df = pm.execute_sql(fetchall=True, sql=
             f"""
@@ -67,7 +67,7 @@ VALUES(%s, %s, %s)
                 except psycopg2.errors.UniqueViolation as e:
                     print(e)
                     pass
-                break
+                break # this point is important to make it faster
         if url is None:
             url = "Not found"
             print(url)
