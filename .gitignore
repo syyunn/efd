@@ -132,3 +132,15 @@ dmypy.json
 .env
 .envlv
 ./scrape/copy-table
+
+# ignore pdfs
+*.pdf
+
+# ignore pngs
+*.png
+
+# ignore csvs
+*.csv
+
+# ignore txt
+*.txt
