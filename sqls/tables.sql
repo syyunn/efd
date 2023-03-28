@@ -93,3 +93,13 @@ CREATE TABLE _sandbox_suyeol.ticker_naics (
 
 ALTER TABLE _sandbox_suyeol.ticker_naics
 ADD CONSTRAINT _sandbox_suyeol_ticker_naics UNIQUE (naics_url);
+
+
+CREATE TABLE _sandbox_suyeol.ticker_naics_zoom (
+    ticker text,
+    asset_name text,
+    naics text,
+);
+
+ALTER TABLE _sandbox_suyeol.ticker_naics_zoom
+ADD CONSTRAINT ticker_naics_zoom UNIQUE (ticker);
