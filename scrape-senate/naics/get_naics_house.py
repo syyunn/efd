@@ -13,8 +13,8 @@ args = parser.parse_args()
 offset = args.batch_size * args.n_th_instance
 
 
-pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
-# pm = PostgresqlManager(dotenv_path="/home/ubuntu/.envlv")
+# pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
+pm = PostgresqlManager(dotenv_path="/home/ubuntu/.envlv")
 
 df = pm.execute_sql(fetchall=True, sql=
             f"""
