@@ -11,7 +11,7 @@ parser.add_argument("--n_th_instance", type=int, default=0)
 args = parser.parse_args()
 
 offset = args.batch_size * args.n_th_instance
-load_dotenv("/Users/syyun/Dropbox (MIT)/efd/.envlv", override=True)
+# load_dotenv("/Users/syyun/Dropbox (MIT)/efd/.envlv", override=True)
 # pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
 pm = PostgresqlManager(dotenv_path="/home/ubuntu/.envlv")
 
@@ -25,9 +25,8 @@ limit {args.batch_size} offset {offset};
 
 if __name__ == "__main__":
     sql_insert_client_name_and_url = """
-UPDATE _sandbox_suyeol.ticker_naics_url 
-SET naics_url = %s
-WHERE ticker = %s AND asset_name = %s;
+INSERT INTO _sandbox_suyeol.ticker_naics_zoom(ticker, asset_name, naics)
+VALUES(%s, %s, %s)
 """
 
     for ticker, asset_name in tqdm(df):
@@ -35,46 +34,32 @@ WHERE ticker = %s AND asset_name = %s;
         url = None
         asset_name_comps = asset_name.replace("\n", "").replace("\t", "").split(" ")
         asset_name_partial = " ".join(asset_name_comps[:2])
-        query = ticker.replace("\n", "").replace("\t", "").replace(" ", "").strip() + " " + asset_name_partial + " " + "NAICS" + " " + "ZoomInfo"
+        query = ticker.replace("\n", "").replace("\t", "").replace(" ", "").strip() + " " + asset_name_partial + " " + "NAICS Code:" + " " + "ZoomInfo"
         print(query)
         # query = ticker.replace("\n", "").replace("\t", "").replace(" ", "") + " " + "naics association"
         from octopus.ggl import GoogleManager
         gm = GoogleManager(use_vpn_if_needed=False)
         bs = gm.search_google(text=query)
-        a_comps = bs.find_all("a")
-        for a in a_comps:
-            # check whether a has href
-            if "href" not in a.attrs:
-                continue # check next a comp
-            # check whether href is a valid url
-            url_cand = a.attrs["href"]
-            if "https://www.zoominfo.com/c/" in url_cand:
-                url = url_cand.split('#')[0]
-                print(url)
-                try:
-                    pm.execute_sql(
-                        sql=sql_insert_client_name_and_url,
-                        parameters=(
-                            url,
-                            ticker,
-                            asset_name
-                        ),
-                        commit=True,
-                    )
-                except psycopg2.errors.UniqueViolation as e:
-                    print(e)
-                    pass
-                break # this point is important to make it faster
-        if url is None:
-            url = "Not found"
-            print(url)
+        a_comps = bs.find_all("span", class_="hgKElc")
+        if len(a_comps) > 0:
+            t = a_comps[0].text
+            import re
+
+            match = re.search(r"NAICS:\s*(\d+,\d+)", t)
+            if match:
+                code = match.group(1).replace(",", "")
+                print(f"NAICS code: {code}")
+            else:
+                print("NAICS code not found")
+            pass
+
             try:
                 pm.execute_sql(
                     sql=sql_insert_client_name_and_url,
                     parameters=(
                         ticker,
                         asset_name,
-                        url
+                        code
                     ),
                     commit=True,
                 )
