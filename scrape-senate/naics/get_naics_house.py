@@ -7,14 +7,13 @@ from dotenv import load_dotenv
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--batch_size", type=int, default=100)
-parser.add_argument("--n_th_instance", type=int, default=1)
+parser.add_argument("--n_th_instance", type=int, default=0)
 args = parser.parse_args()
 
 offset = args.batch_size * args.n_th_instance
 
-
-# pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
-pm = PostgresqlManager(dotenv_path="/home/ubuntu/.envlv")
+pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
+# pm = PostgresqlManager(dotenv_path="/home/ubuntu/.envlv")
 
 df = pm.execute_sql(fetchall=True, sql=
             f"""
@@ -29,6 +28,7 @@ WITH alr AS (
 )
 SELECT agg_hft.ticker, MIN(asset_name) AS asset_name
 FROM agg_hft, UNNEST(agg_hft.asset_names) AS asset_name
+where asset_name is not null
 GROUP BY agg_hft.ticker
 limit {args.batch_size} offset {offset};
                 """

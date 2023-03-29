@@ -11,9 +11,9 @@ parser.add_argument("--n_th_instance", type=int, default=0)
 args = parser.parse_args()
 
 offset = args.batch_size * args.n_th_instance
-# load_dotenv("/Users/syyun/Dropbox (MIT)/efd/.envlv", override=True)
-# pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
-pm = PostgresqlManager(dotenv_path="/home/ubuntu/.envlv")
+load_dotenv("/Users/syyun/Dropbox (MIT)/efd/.envlv", override=True)
+pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
+# pm = PostgresqlManager(dotenv_path="/home/ubuntu/.envlv")
 
 df = pm.execute_sql(fetchall=True, sql=
             f"""
