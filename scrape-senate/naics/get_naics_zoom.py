@@ -11,14 +11,17 @@ parser.add_argument("--n_th_instance", type=int, default=0)
 args = parser.parse_args()
 
 offset = args.batch_size * args.n_th_instance
-# load_dotenv("/Users/syyun/Dropbox (MIT)/efd/.envlv", override=True)
-# pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
-pm = PostgresqlManager(dotenv_path="/home/ubuntu/.envlv")
+load_dotenv("/Users/syyun/Dropbox (MIT)/efd/.envlv", override=True)
+pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
+# pm = PostgresqlManager(dotenv_path="/home/ubuntu/.envlv")
 
 df = pm.execute_sql(fetchall=True, sql=
             f"""
-select distinct ticker, asset_name from "_sandbox_suyeol".ticker_naics_url tnu 
-where naics_url is null or naics_url ='Not found'
+select distinct tnu.ticker, tnu.asset_name  from "_sandbox_suyeol".ticker_naics_url tnu 
+inner join "_sandbox_suyeol".comp c on c.ticker = tnu.ticker 
+left join "_sandbox_suyeol".ticker_naics_zoom tnz on tnz.ticker  = tnu.ticker 
+where (naics_url is null or naics_url ='Not found') and tnz.naics is null and c.is_company  is True
+order by ticker asc
 limit {args.batch_size} offset {offset};
                 """
                 )
@@ -41,6 +44,7 @@ VALUES(%s, %s, %s)
         gm = GoogleManager(use_vpn_if_needed=False)
         bs = gm.search_google(text=query)
         a_comps = bs.find_all("span", class_="hgKElc")
+        
         if len(a_comps) > 0:
             t = a_comps[0].text
             import re
@@ -63,8 +67,28 @@ VALUES(%s, %s, %s)
                     ),
                     commit=True,
                 )
+                print("added")
             except psycopg2.errors.UniqueViolation as e:
                 print(e)
 
-
+        else:
+            ems = bs.find_all("em")
+            if len(ems) > 0:
+                try:
+                    code = str(int(ems[0].text.replace(',', '')))
+                    try:
+                        pm.execute_sql(
+                            sql=sql_insert_client_name_and_url,
+                            parameters=(
+                                ticker,
+                                asset_name,
+                                code
+                            ),
+                            commit=True,
+                        )
+                        print("added")
+                    except psycopg2.errors.UniqueViolation as e:
+                        print(e)
+                except:
+                    continue
 
