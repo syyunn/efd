@@ -6,14 +6,14 @@ from dotenv import load_dotenv
 
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--batch_size", type=int, default=100)
+parser.add_argument("--batch_size", type=int, default=1000)
 parser.add_argument("--n_th_instance", type=int, default=0)
 args = parser.parse_args()
 
 offset = args.batch_size * args.n_th_instance
-load_dotenv("/Users/syyun/Dropbox (MIT)/efd/.envlv", override=True)
-pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
-# pm = PostgresqlManager(dotenv_path="/home/ubuntu/.envlv")
+# load_dotenv("/Users/syyun/Dropbox (MIT)/efd/.envlv", override=True)
+# pm = PostgresqlManager(dotenv_path="/Users/syyun/Dropbox (MIT)/efd/.envlv")
+pm = PostgresqlManager(dotenv_path="/home/ubuntu/.envlv")
 
 df = pm.execute_sql(fetchall=True, sql=
             f"""
@@ -75,7 +75,8 @@ VALUES(%s, %s, %s)
             ems = bs.find_all("em")
             if len(ems) > 0:
                 try:
-                    code = str(int(ems[0].text.replace(',', '')))
+                    code = str(int(ems[0].text.replace(',', '').replace('NAICS Code:', '').replace('NAICS Code', '').strip()))
+                    print(code)
                     try:
                         pm.execute_sql(
                             sql=sql_insert_client_name_and_url,
@@ -90,5 +91,6 @@ VALUES(%s, %s, %s)
                     except psycopg2.errors.UniqueViolation as e:
                         print(e)
                 except:
+                    print("none found")
                     continue
 
